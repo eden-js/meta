@@ -3,7 +3,7 @@
   "description": "",
   "version": "1.0.0",
   "dependencies": {
-    "sitemap": "^2.1.0",
+    "sitemap": "^3.1.0",
     "uuid": "^3.3.2"
   },
   "engines": {
