@@ -1,5 +1,5 @@
 // Require dependencies
-import uuid       from 'uuid';
+import uuid       from 'uuid/v4';
 import config     from 'config';
 import Controller from 'controller';
 import { SitemapStream, streamToPromise } from 'sitemap';
