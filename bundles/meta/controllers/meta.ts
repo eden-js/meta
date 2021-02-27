@@ -1,6 +1,7 @@
 // Require dependencies
 import config     from 'config';
 import Controller from 'controller';
+import { Readable } from 'stream';
 import { v4 as uuid } from 'uuid';
 import { SitemapStream, streamToPromise } from 'sitemap';
 
@@ -51,7 +52,7 @@ export default class MetaController extends Controller {
       this.generateSitemap();
 
       // Set interval
-      if (config.get('sitemap.interval')) setInterval(this.generateSitemap, config.get('sitemap.interval'));
+      setInterval(this.generateSitemap, config.get('sitemap.interval') || 5000);
     }
 
     // use middleware
@@ -317,19 +318,11 @@ export default class MetaController extends Controller {
    */
   async sitemapAction(req, res, next) {
     // Check sitemap
-    if (!this._sitemap) return next();
+    if (!this.sitemap) return next();
 
-    // Return sitemap
-    return this._sitemap.toXML((err, xml) => {
-      // Check error
-      if (err) return next();
-
-      // Set header
-      res.header('Content-Type', 'application/xml');
-
-      // Send xml
-      return res.send(xml);
-    });
+    // Set header
+    res.header('Content-Type', 'application/xml');
+    res.end(this.sitemap.toString());
   }
 
 
@@ -353,19 +346,22 @@ export default class MetaController extends Controller {
         {
           url        : '',
           priority   : 1,
-          changefreq : 'daily',
+          changefreq : 'monthly',
         },
       ],
     };
 
-    // set sitemap
-    let sitemap = null;
-
     // Hook generate
-    await this.eden.hook('sitemap', map, () => {
-      // create stream
-      sitemap = new SitemapStream(map);
-    });
+    await this.eden.hook('sitemap', map, () => {});
+
+    // create sitemap
+    const sitemap = new SitemapStream({
+      hostname  : map.hostname,
+      cacheTime : map.cacheTime,
+    });;
+
+    // add stream
+    Readable.from(map.urls).pipe(sitemap);
     
     // Create
     this.sitemap = await streamToPromise(sitemap);
