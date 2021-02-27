@@ -58,9 +58,9 @@ export default class MetaController extends Controller {
     this.eden.router.use(this.middlewareAction);
 
     // On render
-    this.eden.pre('view.compile', ({ head, res, render }) => {
+    this.eden.pre('view.compile', ({ res, render }) => {
       // set values
-      const { meta } = res;
+      const { __meta : meta } = res;
 
       // loop meta
       Object.keys(meta).sort().forEach((type) => {
@@ -86,7 +86,7 @@ export default class MetaController extends Controller {
           const value = meta[type][name];
   
           // Add to head
-          head += `<${type}`;
+          render.page.head += `<${type}`;
   
           // Loop for tags
           for (let i = 0; i < keys.length; i += 1) {
@@ -94,11 +94,11 @@ export default class MetaController extends Controller {
             if (keys[i] === 'id') continue;
   
             // Add tag
-            head += ` ${keys[i]}="${value[keys[i]]}"`;
+            render.page.head += ` ${keys[i]}="${value[keys[i]]}"`;
           }
   
           // Close tag
-          head += ' />';
+          render.page.head += ' />';
         });
       });
     });
@@ -122,7 +122,7 @@ export default class MetaController extends Controller {
    */
   async middlewareAction(req, res, next) {
     // set meta
-    res.meta = {};
+    res.__meta = {};
 
     // Create meta function
     const metaMiddleware = (type, opts) => {
@@ -151,10 +151,10 @@ export default class MetaController extends Controller {
       }
 
       // Check meta type
-      if (!res.meta[type]) res.meta[type] = {};
+      if (!res.__meta[type]) res.__meta[type] = {};
 
       // Set meta
-      res.meta[type][name] = opts;
+      res.__meta[type][name] = opts;
 
       // Return req
       return res;
@@ -214,10 +214,10 @@ export default class MetaController extends Controller {
     // Create description
     const titleMiddleware = (title) => {
       // Set title
-      res.page = res.page || {};
+      res.locals = res.locals || {};
 
       // Set title
-      res.page.title = req.t(title);
+      res.locals.title = req.t(title);
 
       // Add description
       req.og('title', req.t(title), 'og:title');
