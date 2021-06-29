@@ -213,6 +213,29 @@ export default class MetaController extends Controller {
     req.twitter = res.twitter = twitterMiddleware;
 
     // Create description
+    const keywordsMiddleware = (title) => {
+      // Set title
+      res.locals = res.locals || {};
+
+      // Set title
+      res.locals.title = req.t(title);
+
+      // Add description
+      req.og('keywords', req.t(title), 'og:keywords');
+      req.meta({
+        id       : 'keywords',
+        content  : req.t(title),
+        itemprop : 'name',
+      });
+
+      // Return req
+      return res;
+    };
+
+    // add to req/res
+    req.keywords = res.keywords = keywordsMiddleware;
+
+    // Create description
     const titleMiddleware = (title) => {
       // Set title
       res.locals = res.locals || {};
